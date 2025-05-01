@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an EC2 instance, security group, and key pair.
+
+Parameters:
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+  AllowedCidr:
+    Type: CommaDelimitedList 
+    Default: 0.0.0.0/0
+
+Resources:
+  EC2KeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: MyKeyPair
+
+  LambdaBasicExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "IngressRuleHelper"
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+  IngressRuleHelper:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          const cfnresponse = require('cfn-response');
+          exports.handler = async (event, context) => {
+            try {
+              console.log(event);
+
+              if (event.RequestType === 'Delete') {
+                return await cfnresponse.send(event, context, cfnresponse.SUCCESS, {});
+              }
+
+              const sshIps = event.ResourceProperties.SSHIps;
+              const ports = event.ResourceProperties.Ports;
+              const responseData = {
+                Rules: sshIps.flatMap(sshIp =>
+                  ports.map(port => ({
+                    IpProtocol: "tcp",
+                    FromPort: port,
+                    ToPort: port,
+                    CidrIp: sshIp
+                  }))
+                )
+              };
+              console.log(responseData);
+              return await cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData);
+            } catch (error) {
+              console.error(error);
+
+              return await cfnresponse.send(event, context, cfnresponse.FAILED);
+            }
+          };
+      Handler: index.handler
+      MemorySize: 128
+      Role: !GetAtt LambdaBasicExecRole.Arn
+      Runtime: nodejs22.x
+      Timeout: 60
+
+  SSHIngressRules:
+    Type: Custom::IngressRuleHelper
+    Version: 1.0
+    Properties:
+      ServiceTimeout: 60
+      ServiceToken: !GetAtt IngressRuleHelper.Arn
+      SSHIps: !Ref AllowedCidr
+      Ports:
+        - 22
+        - 8888
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH access
+      SecurityGroupIngress: !GetAtt SSHIngressRules.Rules
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: !Ref EC2KeyPair
+      SecurityGroupIds:
+        - !GetAtt EC2SecurityGroup.GroupId
+      ImageId: !Ref LatestAmiId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          echo "GatewayPorts yes" >> /etc/ssh/sshd_config
+          systemctl restart sshd
+      Tags:
+        - Key: Name
+          Value: for-ssh-portforwarding
+    DependsOn: EC2SecurityGroup    
+
+Outputs:
+  InstanceId:
+    Description: The Instance ID of the created EC2 instance
+    Value: !Ref EC2Instance
+  PublicIP:
+    Description: The public IP address of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+  KeyPairId:
+    Description: The ID of the created key pair
+    Value: !GetAtt EC2KeyPair.KeyPairId

@@ -1,0 +1,45 @@
+# 概要
+
+SSHリモートフォワーディングを利用して外部からローカル上のサーバーにアクセスできるようにします。
+外部に立てたEC2にアクセスすると内部にアクセスを転送します。
+
+# 使い方
+
+* 必要なパッケージのインストール
+
+```
+$ yarn
+```
+
+## EC2作成とSSHリモートフォワーディングを同時に実行
+
+実行中に表示されるPublicIPを用いて、http://[PublicIP]:8888にアクセスするとローカルサーバーにアクセス
+Ctrl + Cで停止してEC2削除
+※ [PublicIP]:8888はデフォルトではアクセス制限をしていないため要注意、必要なら-cオプションでアクセス制限すること(詳細は--helpオプション参照)
+
+```
+$ yarn run ts-node scripts/manage-ssh-forwarding.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
+```
+
+## EC2作成とSSHリモートフォワーディングを分離して実行
+
+* AWSインフラ(EC2)の作成
+
+```
+$ yarn run ts-node scripts/manage-cf.ts create
+```
+
+* SSHリモートフォワーディングの実行(Ctrl + Cで停止)
+
+実行中に表示されるPublicIPを用いて、http://[PublicIP]:8888にアクセスするとローカルサーバーにアクセス
+※ [PublicIP]:8888はデフォルトではアクセス制限をしていないため要注意、必要なら-cオプションでアクセス制限すること(詳細は--helpオプション参照)
+
+```
+$ yarn run ts-node scripts/sshclient.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
+```
+
+* AWSインフラ(EC2)の削除
+
+```
+$ yarn run ts-node scripts/manage-cf.ts delete
+```
