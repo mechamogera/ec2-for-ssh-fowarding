@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "ec2": "tsx scripts/manage-cf.ts",
+    "sshrf": "tsx scripts/sshclient.ts",
+    "ec2-sshrf": "tsx scripts/manage-ssh-forwarding.ts"
+  },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.782.0",
     "@aws-sdk/client-ec2": "^3.783.0",
