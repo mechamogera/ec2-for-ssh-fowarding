@@ -18,7 +18,7 @@ Ctrl + Cで停止してEC2削除
 ※ [PublicIP]:8888はデフォルトではアクセス制限をしていないため要注意、必要なら-cオプションでアクセス制限すること(詳細は--helpオプション参照)
 
 ```
-$ yarn run ts-node scripts/manage-ssh-forwarding.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
+$ yarn run tsx scripts/manage-ssh-forwarding.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
 ```
 
 ## EC2作成とSSHリモートフォワーディングを分離して実行
@@ -26,7 +26,7 @@ $ yarn run ts-node scripts/manage-ssh-forwarding.ts -a [ローカルサーバー
 * AWSインフラ(EC2)の作成
 
 ```
-$ yarn run ts-node scripts/manage-cf.ts create
+$ yarn run tsx scripts/manage-cf.ts create
 ```
 
 * SSHリモートフォワーディングの実行(Ctrl + Cで停止)
@@ -35,11 +35,11 @@ $ yarn run ts-node scripts/manage-cf.ts create
 ※ [PublicIP]:8888はデフォルトではアクセス制限をしていないため要注意、必要なら-cオプションでアクセス制限すること(詳細は--helpオプション参照)
 
 ```
-$ yarn run ts-node scripts/sshclient.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
+$ yarn run tsx scripts/sshclient.ts -a [ローカルサーバーIPアドレス] -p [ローカルサーバーのポート]
 ```
 
 * AWSインフラ(EC2)の削除
 
 ```
-$ yarn run ts-node scripts/manage-cf.ts delete
+$ yarn run ttsx scripts/manage-cf.ts delete
 ```

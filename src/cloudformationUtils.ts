@@ -9,8 +9,7 @@ import {
 import { EC2Client, waitUntilInstanceStatusOk } from "@aws-sdk/client-ec2";
 import { load } from "js-yaml";
 import { readFileSync } from "fs";
-
-const scheme = require("cloudformation-schema-js-yaml");
+import scheme from "cloudformation-schema-js-yaml";
 
 export async function createStack(region: string, stackName: string, isWait: boolean, allowedCidr: string = "0.0.0.0/0") {
     const client = new CloudFormationClient({ region });

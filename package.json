@@ -2,6 +2,7 @@
   "name": "ec2-for-ssh-portforward",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.782.0",
     "@aws-sdk/client-ec2": "^3.783.0",
@@ -11,9 +12,11 @@
     "@types/ssh2": "^1.15.5",
     "cloudformation-schema-js-yaml": "^2.0.0",
     "commander": "^13.1.0",
+    "is-cidr": "^5.1.1",
     "js-yaml": "^4.1.0",
     "ssh2": "^1.16.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
 }

@@ -1,15 +1,17 @@
 import { Command } from 'commander';
-import { defaultRegion, defaultStackName } from "../src/config";
-import { createStack, deleteStack, getCloudFormationOutputs } from "../src/cloudformationUtils";
-import { getPrivateKey, sshRemoteForwarding } from "../src/sshUtils";
+import { defaultRegion, defaultStackName } from "../src/config.js";
+import { createStack, deleteStack, getCloudFormationOutputs } from "../src/cloudformationUtils.js";
+import { getPrivateKey, sshRemoteForwarding } from "../src/sshUtils.js";
+import { parseCidrs, parseMyInt } from "../src/commandHelper.js";
+import { exit } from 'process';
 
 async function main() {
     const command = new Command();
     command.option('-r, --region <region>', 'AWS region', defaultRegion);
     command.option('-s, --stack-name <stackName>', 'Stack name', defaultStackName);
-    command.option('-p, --target-port <port>', 'Target port', parseInt, 8888);
+    command.option('-p, --target-port <port>', 'Target port', parseMyInt, 8888);
     command.requiredOption('-a, --target-address <address>', 'Target address');
-    command.option('-c, --allowed-cidr <allowedCidr>', 'Allowed CIDR(ex: 203.0.113.5/32,203.0.113.6/32)', '0.0.0.0/0');
+    command.option('-c, --allowed-cidr <allowedCidr>', 'Allowed CIDR(ex: 203.0.113.5/32,203.0.113.6/32)', parseCidrs, '0.0.0.0/0');
     command.parse();
 
     const options = command.opts();

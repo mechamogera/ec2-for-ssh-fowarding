@@ -1,21 +1,14 @@
 import { Command } from 'commander';
-import { defaultRegion, defaultStackName } from "../src/config";
-import { getCloudFormationOutputs } from "../src/cloudformationUtils";
-import { getPrivateKey, sshRemoteForwarding } from "../src/sshUtils";
-
-function intOption(value: string, previos: number) {
-    const intValue = parseInt(value);
-    if (isNaN(intValue)) {
-        throw new Error(`Invalid integer value: ${value}`);
-    }
-    return intValue;
-}
+import { defaultRegion, defaultStackName } from "../src/config.js";
+import { getCloudFormationOutputs } from "../src/cloudformationUtils.js";
+import { getPrivateKey, sshRemoteForwarding } from "../src/sshUtils.js";
+import { parseMyInt } from "../src/commandHelper.js";
 
 async function main() {
     const command = new Command();
     command.option('-r, --region <region>', 'AWS region', defaultRegion);
     command.option('-s, --stack-name <stackName>', 'Stack name', defaultStackName);
-    command.option('-p, --target-port <port>', 'Target port', intOption, 8888);
+    command.option('-p, --target-port <port>', 'Target port', parseMyInt, 8888);
     command.requiredOption('-a, --target-address <address>', 'Target address');
     command.parse();
 
